@@ -1,0 +1,66 @@
+@inject IUserService UserService
+@inject IJSRuntime JSRuntime
+
+@if (User.ID == 0)
+{
+    <h3>Create a new User</h3>
+}
+else
+{
+    <h3>Edit '@User.Username'</h3>
+}
+
+<EditForm Model="User" OnSubmit="HandleSubmit">
+    <div class="form-group">
+        <label>First Name</label>
+        <InputText @bind-Value="User.FirstName" class="form-control"></InputText>
+    </div>
+    <div class="form-group">
+        <label>Last Name</label>
+        <InputText @bind-Value="User.LastName" class="form-control"></InputText>
+    </div>
+    <div class="form-group">
+        <label>Hero Name</label>
+        <InputText @bind-Value="User.Username" class="form-control"></InputText>
+    </div>
+    <div class="form-group">
+        <label>Comic</label><br />
+        <InputRadioGroup @bind-Value="groupID" class="form-control">
+        @foreach (var item in UserService.Groups)
+        {
+            <InputRadio Value="@item.ID" /><span style="padding-left: 5px;">@item.Name</span><br />
+        }
+        </InputRadioGroup>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public bpgweb.Shared.Models.User User { get; set; } = new bpgweb.Shared.Models.User();
+    int groupID = 1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await UserService.GetGroups();
+        groupID = User.GroupID;
+    }
+
+    async void HandleSubmit()
+    {
+        User.Group      = null;
+        User.GroupID    = groupID;
+
+        await JSRuntime.InvokeVoidAsync("console.log", User);
+
+        if (User.ID == 0)
+        {
+            await UserService.CreateUser(User);
+        }
+        else
+        {
+            await UserService.UpdateUser(User, User.ID);
+        }
+
+    }
+}

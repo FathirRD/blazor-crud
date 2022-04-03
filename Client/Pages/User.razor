@@ -1,0 +1,26 @@
+@page "/user/{ID:int}"
+@inject IUserService UserService
+
+@if (user == null)
+{
+    <span>Loading user data..</span>
+}
+else
+{
+    <h2>@user.Username</h2>
+    
+    <h3>Full name: <span class="badge badge-primary">@user.FirstName @user.LastName</span></h3>
+    <span class="badge badge-pill badge-primary">@user.Group.Name</span>
+}
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    bpgweb.Shared.Models.User user = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserService.GetUser(ID);
+    }
+}
